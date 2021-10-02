@@ -1,0 +1,26 @@
+I"<p>I’m an awesome PIC 16B student and I am running Jekyll!</p>
+
+<h3 id="third-level-header">Third level header</h3>
+<h2 id="hi">Hi</h2>
+<h1 id="hi-too">Hi too!</h1>
+<h2 id="hello">Hello</h2>
+<h1 id="math">Math</h1>
+
+\[f(x) = e^x\]
+
+<h1 id="code">code</h1>
+<p><code class="language-plaintext highlighter-rouge">np.random.rand()</code></p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="s">"""
+A cool function that multiplies an input x by 2.
+"""</span>
+<span class="k">return</span> <span class="mi">2</span><span class="o">*</span><span class="n">x</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">to boldly go</code></p>
+
+<p><img src="2021-10-02-15-19-59.png" alt="" /></p>
+
+<p><img src="\C:\Users\junhu\OneDrive\Documents\GitHub\gjwns9929.github.io\images\diversity-700x439.jpg" alt="first_image" /></p>
+:ET
