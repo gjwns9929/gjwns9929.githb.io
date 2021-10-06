@@ -1,0 +1,23 @@
+I"Ä<p>Jun Hurâ€™s Blog Post 0 for PIC 16B!</p>
+
+<p>In this post, I will explain a simple and interesting data visualization using the Palmer Penguins dataset.</p>
+
+<h1 id="reading-the-data">Reading the data.</h1>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="n">pd</span>
+<span class="n">url</span> <span class="o">=</span> <span class="s">"https://raw.githubusercontent.com/PhilChodrow/PIC16B/master/datasets/palmer_penguins.csv"</span>
+<span class="n">penguins</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="first-ten-penguins-in-the-data">First ten penguins in the data</h2>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">penguins</span><span class="p">.</span><span class="n">head</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+</code></pre></div></div>
+<p><img src="/images/blog_0_penguin0.JPG" alt="_config.yml" /></p>
+
+<p>I want to analyze <strong>culmen length</strong> of the penguins!</p>
+
+<h2 id="take-the-statistics-of-the-culmen-length">Take the statistics of the culmen length.</h2>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">penguins</span><span class="p">[</span><span class="s">"Culmen Length (mm)"</span><span class="p">].</span><span class="n">describe</span><span class="p">()</span>
+</code></pre></div></div>
+:ET
