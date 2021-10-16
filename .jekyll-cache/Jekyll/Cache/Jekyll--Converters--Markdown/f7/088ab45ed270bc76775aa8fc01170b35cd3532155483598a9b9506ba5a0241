@@ -1,0 +1,260 @@
+I"�c<p>Jun Hur’s Blog Post 1 for PIC 16B!</p>
+
+<h1 id="1create-a-database">1.Create a Database.</h1>
+<p>Here, we are going to create a database with three tables: <code class="language-plaintext highlighter-rouge">temperatures</code>, <code class="language-plaintext highlighter-rouge">stations</code>, and <code class="language-plaintext highlighter-rouge">countries</code> in our current directory.</p>
+
+<p>First, we need to import <code class="language-plaintext highlighter-rouge">sqlite3</code> package and make a connection to finally create a database named <code class="language-plaintext highlighter-rouge">Blog_Post_1_1.db</code>.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">sqlite3</span>
+<span class="n">conn</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="p">.</span><span class="n">connect</span><span class="p">(</span><span class="s">"Blog_Post_1_1.db"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Let’s note that our original data <code class="language-plaintext highlighter-rouge">temps.csv</code> is really big; it has 1.3 million rows with 14 columns.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="n">pd</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s">"temps.csv"</span><span class="p">)</span>
+<span class="n">df</span><span class="p">.</span><span class="n">shape</span>
+</code></pre></div></div>
+<p><img src="/images/blog_1_database_0.jpg" alt="_config.yml" /></p>
+
+<p>We are going to use a database to get subsets of the data when we need it. To work with <code class="language-plaintext highlighter-rouge">temps.csv</code>, we need to get <code class="language-plaintext highlighter-rouge">countries</code> and <code class="language-plaintext highlighter-rouge">stations</code> data as well.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">countries_url</span> <span class="o">=</span> <span class="s">"""https://raw.githubusercontent.com/mysociety/
+gaze/master/data/fips-10-4-to-iso-country-codes.csv"""</span>
+<span class="n">countries</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">countries_url</span><span class="p">)</span>
+<span class="n">countries</span> <span class="o">=</span> <span class="n">countries</span><span class="p">.</span><span class="n">rename</span><span class="p">({</span><span class="s">"Name"</span> <span class="p">:</span> <span class="s">"Country"</span><span class="p">},</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">countries</span> <span class="o">=</span> <span class="n">countries</span><span class="p">.</span><span class="n">rename</span><span class="p">({</span><span class="s">"FIPS 10-4"</span> <span class="p">:</span> <span class="s">"Code"</span><span class="p">},</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">countries</span> <span class="o">=</span> <span class="n">countries</span><span class="p">.</span><span class="n">drop</span><span class="p">(</span><span class="s">"ISO 3166"</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="n">countries</span>
+</code></pre></div></div>
+
+<p><img src="/images/blog_1_database_1.jpg" alt="_config.yml" /></p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">url</span> <span class="o">=</span> <span class="s">"""https://raw.githubusercontent.com/
+PhilChodrow/PIC16B/master/datasets/noaa-ghcn
+/station-metadata.csv"""</span> 
+<span class="n">stations</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+<span class="n">stations</span>
+</code></pre></div></div>
+
+<p><img src="/images/blog_1_database_2.jpg" alt="_config.yml" /></p>
+
+<p>Instead of working the huge size data, we are going to use an <code class="language-plaintext highlighter-rouge">iterator</code>, so that we can see a subset of data with size equal to <code class="language-plaintext highlighter-rouge">chunksize</code>.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">df_iter</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s">"temps.csv"</span><span class="p">,</span><span class="n">chunksize</span><span class="o">=</span><span class="mi">100000</span><span class="p">)</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df_iter</span><span class="p">.</span><span class="n">__next__</span><span class="p">()</span>
+<span class="n">df</span>
+</code></pre></div></div>
+
+<p><img src="/images/blog_1_database_3.jpg" alt="_config.yml" /></p>
+
+<p>Okay, before we create a database, let’s prepare our dataframe. Here, we are going to take only <code class="language-plaintext highlighter-rouge">ID</code>, <code class="language-plaintext highlighter-rouge">Year</code>, <code class="language-plaintext highlighter-rouge">Month</code>, <code class="language-plaintext highlighter-rouge">Temp</code>, and <code class="language-plaintext highlighter-rouge">Code</code>, which represents a country code.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">prepare_df</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+    <span class="s">"""
+    Prepare the dataframe for only necessary columns.
+    
+    @param df(DataFrame): the dataframe to prepare.
+    """</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">.</span><span class="n">set_index</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="p">[</span><span class="s">"ID"</span><span class="p">,</span> <span class="s">"Year"</span><span class="p">])</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">.</span><span class="n">stack</span><span class="p">()</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">.</span><span class="n">reset_index</span><span class="p">()</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span> <span class="o">=</span> <span class="p">{</span><span class="s">"level_2"</span>  <span class="p">:</span> <span class="s">"Month"</span> 
+                              <span class="p">,</span> <span class="mi">0</span> <span class="p">:</span> <span class="s">"Temp"</span><span class="p">})</span>
+    <span class="n">df</span><span class="p">[</span><span class="s">"Month"</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s">"Month"</span><span class="p">].</span><span class="nb">str</span><span class="p">[</span><span class="mi">5</span><span class="p">:].</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">df</span><span class="p">[</span><span class="s">"Temp"</span><span class="p">]</span>  <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s">"Temp"</span><span class="p">]</span> <span class="o">/</span> <span class="mi">100</span>
+    
+    <span class="n">df</span><span class="p">[</span><span class="s">"Code"</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s">"ID"</span><span class="p">].</span><span class="nb">str</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">prepare_df</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="n">df</span>
+</code></pre></div></div>
+<p><img src="/images/blog_1_database_4.jpg" alt="_config.yml" /></p>
+
+<p>Now, we are going to write to our database, by creating a tables called <code class="language-plaintext highlighter-rouge">temperatures</code>, <code class="language-plaintext highlighter-rouge">stations</code>, <code class="language-plaintext highlighter-rouge">countries</code>.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">df_iter</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s">"temps.csv"</span><span class="p">,</span> <span class="n">chunksize</span> <span class="o">=</span> <span class="mi">100000</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">df</span> <span class="ow">in</span> <span class="n">df_iter</span><span class="p">:</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">prepare_df</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+    <span class="n">df</span><span class="p">.</span><span class="n">to_sql</span><span class="p">(</span><span class="s">"temperatures"</span><span class="p">,</span> <span class="n">conn</span><span class="p">,</span> 
+              <span class="n">if_exists</span> <span class="o">=</span> <span class="s">"append"</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="bp">False</span><span class="p">)</span>
+
+<span class="n">stations</span><span class="p">.</span><span class="n">to_sql</span><span class="p">(</span><span class="s">"stations"</span><span class="p">,</span> <span class="n">conn</span><span class="p">,</span> 
+                <span class="n">if_exists</span> <span class="o">=</span> <span class="s">"replace"</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="bp">False</span><span class="p">)</span>
+
+<span class="n">countries</span><span class="p">.</span><span class="n">to_sql</span><span class="p">(</span><span class="s">"countries"</span><span class="p">,</span> <span class="n">conn</span><span class="p">,</span>
+                 <span class="n">if_exists</span> <span class="o">=</span> <span class="s">"replace"</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="bp">False</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Let’s see what tables are created.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">cursor</span> <span class="o">=</span> <span class="n">conn</span><span class="p">.</span><span class="n">cursor</span><span class="p">()</span>
+<span class="n">cursor</span><span class="p">.</span><span class="n">execute</span><span class="p">(</span><span class="s">"""SELECT name FROM 
+sqlite_master WHERE type='table'"""</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">cursor</span><span class="p">.</span><span class="n">fetchall</span><span class="p">())</span>
+</code></pre></div></div>
+<p><img src="/images/blog_1_database_5.jpg" alt="_config.yml" /></p>
+
+<p>Let’s also see the columns of each table.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">cursor</span><span class="p">.</span><span class="n">execute</span><span class="p">(</span><span class="s">"""SELECT sql FROM sqlite_master
+               WHERE type='table';"""</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">cursor</span><span class="p">.</span><span class="n">fetchall</span><span class="p">():</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</code></pre></div></div>
+<p><img src="/images/blog_1_database_6.jpg" alt="_config.yml" /></p>
+
+<p>Everything looks good, let’s close the connection.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">conn</span><span class="p">.</span><span class="n">close</span><span class="p">()</span>
+</code></pre></div></div>
+
+<h1 id="2query-function">2.Query Function</h1>
+
+<p>We need to take a subset of the huge data, which is saved in the database we created in step 1.</p>
+
+<p>Here, we will write a function called <code class="language-plaintext highlighter-rouge">query_climate_database()</code> that accepts four arguments:</p>
+
+<ul>
+  <li>
+    <p><code class="language-plaintext highlighter-rouge">country</code>, a string, the name of a country for which data should be returned.</p>
+  </li>
+  <li>
+    <p><code class="language-plaintext highlighter-rouge">year_begin</code> and <code class="language-plaintext highlighter-rouge">year_end</code>, integers, the earliest and latest years for which data should be returned.</p>
+  </li>
+  <li>
+    <p><code class="language-plaintext highlighter-rouge">month</code>, an integer, the month of the year for which data should be returned</p>
+  </li>
+</ul>
+
+<p>The return value of <code class="language-plaintext highlighter-rouge">query_climate_database()</code> is a Pandas dataframe of temperature readings for the specified country, in the specified date range, in the specified month of the year. This dataframe should have columns for:</p>
+
+<ul>
+  <li>The station name.</li>
+  <li>The latitude of the station.</li>
+  <li>The longitude of the station.</li>
+  <li>The name of the country in which the station is located.</li>
+  <li>The year in which the reading was taken.</li>
+  <li>The month in which the reading was taken.</li>
+  <li>The average temperature at the specified station during the specified year and month.</li>
+</ul>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">conn</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="p">.</span><span class="n">connect</span><span class="p">(</span><span class="s">"Blog_Post_1_1.db"</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">query_climate_database</span><span class="p">(</span><span class="n">country</span><span class="p">,</span><span class="n">year_begin</span><span class="p">,</span><span class="n">year_end</span><span class="p">,</span><span class="n">month</span><span class="p">):</span>
+    <span class="s">"""
+    Query a database with specified information.
+    
+    @param country(str): the name of the country
+    @param year_begin(int): the starting year to take
+    @param year_end(int): the ending year to take
+    @param month(int): the specific month of each year.
+    
+    @return df(DataFrame): the dataFrame of a subset of the data.
+    """</span>
+    
+    
+    <span class="n">cmd</span> <span class="o">=</span><span class="sa">f</span><span class="s">"""
+    SELECT S.name, S.latitude, S.longitude, 
+        C.country, T.year, T.month, T.temp
+    FROM temperatures T
+    LEFT JOIN stations S ON T.id = S.id
+    LEFT JOIN countries C on T.code = C.code
+    WHERE C.country == "</span><span class="si">{</span><span class="n">country</span><span class="si">}</span><span class="s">" AND 
+        T.year &gt;= </span><span class="si">{</span><span class="n">year_begin</span><span class="si">}</span><span class="s"> AND 
+        T.year &lt;= </span><span class="si">{</span><span class="n">year_end</span><span class="si">}</span><span class="s"> AND T.month == </span><span class="si">{</span><span class="n">month</span><span class="si">}</span><span class="s">
+    """</span>
+    
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="n">read_sql_query</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span><span class="n">conn</span><span class="p">)</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+</code></pre></div></div>
+<p>Here we use a command with <code class="language-plaintext highlighter-rouge">f</code> type multiline to take the specified information. Let’s test it!</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">query_climate_database</span><span class="p">(</span><span class="n">country</span> <span class="o">=</span> <span class="s">"India"</span><span class="p">,</span>
+                      <span class="n">year_begin</span> <span class="o">=</span> <span class="mi">1980</span><span class="p">,</span>
+                      <span class="n">year_end</span> <span class="o">=</span> <span class="mi">2020</span><span class="p">,</span>
+                      <span class="n">month</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+</code></pre></div></div>
+<p><img src="/images/blog_1_query_00.jpg" alt="_config.yml" /></p>
+
+<p>Let’s take a look at the subset of data for <strong>India</strong> between <strong>1980 and 2020</strong> on <strong>January</strong> only.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">df_db</span> <span class="o">=</span> <span class="n">query_climate_database</span><span class="p">(</span><span class="n">country</span> <span class="o">=</span> <span class="s">"India"</span><span class="p">,</span>
+                      <span class="n">year_begin</span> <span class="o">=</span> <span class="mi">1980</span><span class="p">,</span>
+                      <span class="n">year_end</span> <span class="o">=</span> <span class="mi">2020</span><span class="p">,</span>
+                      <span class="n">month</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="n">df_db</span>
+</code></pre></div></div>
+<p><img src="/images/blog_1_database_7.jpg" alt="_config.yml" /></p>
+
+<p>Okay, let’s take a look at the number of stations.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">len</span><span class="p">(</span><span class="n">df_db</span><span class="p">[</span><span class="s">"NAME"</span><span class="p">].</span><span class="n">unique</span><span class="p">())</span> <span class="c1">#number of stations
+</span></code></pre></div></div>
+<p><img src="/images/blog_1_database_8.jpg" alt="_config.yml" /></p>
+
+<p>Maybe let’s take a look at <strong>the first and last stations</strong> in the data.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">df_db</span><span class="p">[</span><span class="s">"NAME"</span><span class="p">].</span><span class="n">unique</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="c1">#first station
+</span></code></pre></div></div>
+<p><img src="/images/blog_1_database_9.jpg" alt="_config.yml" /></p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">df_db</span><span class="p">[</span><span class="s">"NAME"</span><span class="p">].</span><span class="n">unique</span><span class="p">()[</span><span class="mi">103</span><span class="p">]</span> <span class="c1">#last station
+</span></code></pre></div></div>
+<p><img src="/images/blog_1_database_10.jpg" alt="_config.yml" /></p>
+
+<p>Then, we need to know <strong>how many years each station have recording</strong>.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">#number of years in each station
+</span>
+<span class="n">num_years</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">df_db</span><span class="p">[</span><span class="s">"NAME"</span><span class="p">].</span><span class="n">unique</span><span class="p">())):</span>
+     <span class="n">num_years</span><span class="p">.</span><span class="n">append</span><span class="p">(</span>
+         <span class="nb">len</span><span class="p">(</span><span class="n">df_db</span><span class="p">[</span><span class="n">df_db</span><span class="p">[</span><span class="s">"NAME"</span><span class="p">]</span> <span class="o">==</span> 
+                   <span class="n">df_db</span><span class="p">[</span><span class="s">"NAME"</span><span class="p">].</span><span class="n">unique</span><span class="p">()[</span><span class="n">i</span><span class="p">]][</span><span class="s">"Year"</span><span class="p">].</span><span class="n">unique</span><span class="p">()))</span>
+
+<span class="n">num_years</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">num_years</span><span class="p">)</span>
+<span class="n">num_years</span> 
+</code></pre></div></div>
+<p><img src="/images/blog_1_query_0.jpg" alt="_config.yml" /></p>
+
+<p>This is a array of numbers that represent <strong>the number of years</strong> each station have recording.</p>
+
+<p>Next, we need to find the index of each station that have <strong>less than 10 years of recording</strong>.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">#What are the indices of stations with less than 10 years?
+</span><span class="n">index_to_filter</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span>
+                   <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">num_years</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">)</span> <span class="k">if</span> <span class="n">x</span><span class="p">]</span>
+<span class="n">index_to_filter</span>
+</code></pre></div></div>
+<p><img src="/images/blog_1_query_1.jpg" alt="_config.yml" /></p>
+
+<p>Next, let’s find <strong>the names of the stations</strong> that have less than 10 years of recording.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">#Creates a list of stations with less then 10 years of record
+</span><span class="n">station_name_filtered</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">index_to_filter</span><span class="p">)):</span>
+    <span class="n">station_name_filtered</span><span class="p">.</span><span class="n">append</span><span class="p">(</span>
+        <span class="n">df_db</span><span class="p">[</span><span class="s">"NAME"</span><span class="p">].</span><span class="n">unique</span><span class="p">()[</span><span class="n">index_to_filter</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
+<span class="n">station_name_filtered</span>
+</code></pre></div></div>
+<p><img src="/images/blog_1_query_2.jpg" alt="_config.yml" /></p>
+
+<p>Finally, let’s filter the stations that have less than 10 years of recording.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">index_to_filter</span><span class="p">)):</span>
+    <span class="n">df_db</span> <span class="o">=</span> <span class="n">df_db</span><span class="p">[</span><span class="n">df_db</span><span class="p">.</span><span class="n">NAME</span> <span class="o">!=</span> <span class="n">station_name_filtered</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
+    
+    
+<span class="n">df_db</span>
+</code></pre></div></div>
+<p><img src="/images/blog_1_query_3.jpg" alt="_config.yml" /></p>
+:ET

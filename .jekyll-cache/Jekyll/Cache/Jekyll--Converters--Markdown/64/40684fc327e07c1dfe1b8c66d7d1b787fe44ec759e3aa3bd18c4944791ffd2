@@ -1,0 +1,75 @@
+I".#<p>Jun Hur’s Blog Post 1 for PIC 16B!</p>
+
+<h1 id="1create-a-database">1.Create a Database.</h1>
+<p>Here, we are going to create a database with three tables: <code class="language-plaintext highlighter-rouge">temperatures</code>, <code class="language-plaintext highlighter-rouge">stations</code>, and <code class="language-plaintext highlighter-rouge">countries</code> in our current directory.</p>
+
+<p>First, we need to import <code class="language-plaintext highlighter-rouge">sqlite3</code> package and make a connection to finally create a database named <code class="language-plaintext highlighter-rouge">Blog_Post_1_1.db</code>.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">sqlite3</span>
+<span class="n">conn</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="p">.</span><span class="n">connect</span><span class="p">(</span><span class="s">"Blog_Post_1_1.db"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Let’s note that our original data <code class="language-plaintext highlighter-rouge">temps.csv</code> is really big; it has 1.3 million rows with 14 columns.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="n">pd</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s">"temps.csv"</span><span class="p">)</span>
+<span class="n">df</span><span class="p">.</span><span class="n">shape</span>
+</code></pre></div></div>
+<p><img src="/images/blog_1_database_0.jpg" alt="_config.yml" /></p>
+
+<p>We are going to use a database to get subsets of the data when we need it. To work with <code class="language-plaintext highlighter-rouge">temps.csv</code>, we need to get <code class="language-plaintext highlighter-rouge">countries</code> and <code class="language-plaintext highlighter-rouge">stations</code> data as well.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">countries_url</span> <span class="o">=</span> <span class="s">"""https://raw.githubusercontent.com/mysociety/
+gaze/master/data/fips-10-4-to-iso-country-codes.csv"""</span>
+<span class="n">countries</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">countries_url</span><span class="p">)</span>
+<span class="n">countries</span> <span class="o">=</span> <span class="n">countries</span><span class="p">.</span><span class="n">rename</span><span class="p">({</span><span class="s">"Name"</span> <span class="p">:</span> <span class="s">"Country"</span><span class="p">},</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">countries</span> <span class="o">=</span> <span class="n">countries</span><span class="p">.</span><span class="n">rename</span><span class="p">({</span><span class="s">"FIPS 10-4"</span> <span class="p">:</span> <span class="s">"Code"</span><span class="p">},</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">countries</span> <span class="o">=</span> <span class="n">countries</span><span class="p">.</span><span class="n">drop</span><span class="p">(</span><span class="s">"ISO 3166"</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="n">countries</span>
+</code></pre></div></div>
+
+<p><img src="/images/blog_1_database_1.jpg" alt="_config.yml" /></p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">url</span> <span class="o">=</span> <span class="s">"""https://raw.githubusercontent.com/
+PhilChodrow/PIC16B/master/datasets/noaa-ghcn
+/station-metadata.csv"""</span> 
+<span class="n">stations</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+<span class="n">stations</span>
+</code></pre></div></div>
+
+<p><img src="/images/blog_1_database_2.jpg" alt="_config.yml" /></p>
+
+<p>Instead of working the huge size data, we are going to use an <code class="language-plaintext highlighter-rouge">iterator</code>, so that we can see a subset of data with size equal to <code class="language-plaintext highlighter-rouge">chunksize</code>.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">df_iter</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s">"temps.csv"</span><span class="p">,</span><span class="n">chunksize</span><span class="o">=</span><span class="mi">100000</span><span class="p">)</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df_iter</span><span class="p">.</span><span class="n">__next__</span><span class="p">()</span>
+<span class="n">df</span>
+</code></pre></div></div>
+
+<p><img src="/images/blog_1_database_2.jpg" alt="_config.yml" /></p>
+
+<p>Okay, before we create a database, let’s prepare our dataframe. Here, we are going to take only <code class="language-plaintext highlighter-rouge">ID</code>, <code class="language-plaintext highlighter-rouge">Year</code>, <code class="language-plaintext highlighter-rouge">Month</code>, <code class="language-plaintext highlighter-rouge">Temp</code>, and <code class="language-plaintext highlighter-rouge">Code</code>, which represents a country code.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">prepare_df</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+    <span class="s">"""
+    Prepare the dataframe for only necessary columns.
+    
+    @param df(DataFrame): the dataframe to prepare.
+    """</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">.</span><span class="n">set_index</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="p">[</span><span class="s">"ID"</span><span class="p">,</span> <span class="s">"Year"</span><span class="p">])</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">.</span><span class="n">stack</span><span class="p">()</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">.</span><span class="n">reset_index</span><span class="p">()</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span> <span class="o">=</span> <span class="p">{</span><span class="s">"level_2"</span>  <span class="p">:</span> <span class="s">"Month"</span> 
+                              <span class="p">,</span> <span class="mi">0</span> <span class="p">:</span> <span class="s">"Temp"</span><span class="p">})</span>
+    <span class="n">df</span><span class="p">[</span><span class="s">"Month"</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s">"Month"</span><span class="p">].</span><span class="nb">str</span><span class="p">[</span><span class="mi">5</span><span class="p">:].</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">df</span><span class="p">[</span><span class="s">"Temp"</span><span class="p">]</span>  <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s">"Temp"</span><span class="p">]</span> <span class="o">/</span> <span class="mi">100</span>
+    
+    <span class="n">df</span><span class="p">[</span><span class="s">"Code"</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s">"ID"</span><span class="p">].</span><span class="nb">str</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">prepare_df</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="n">df</span>
+</code></pre></div></div>
+<p><img src="/images/blog_1_database_3.jpg" alt="_config.yml" /></p>
+:ET

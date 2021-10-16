@@ -1,0 +1,11 @@
+I"#<p>Jun Hur’s Blog Post 1 for PIC 16B!</p>
+
+<h1 id="1create-a-database">1.Create a Database.</h1>
+<p>Here, we are going to create a database with three tables: <code class="language-plaintext highlighter-rouge">temperatures</code>, <code class="language-plaintext highlighter-rouge">stations</code>, and <code class="language-plaintext highlighter-rouge">countries</code> in our current directory.</p>
+
+<p>First, we need to import <code class="language-plaintext highlighter-rouge">sqlite3</code> package and make a connection to finally create a database named <code class="language-plaintext highlighter-rouge">Blog_Post_1_1.db</code>.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">sqlite3</span>
+<span class="n">conn</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="p">.</span><span class="n">connect</span><span class="p">(</span><span class="s">"Blog_Post_1_1.db"</span><span class="p">)</span>
+</code></pre></div></div>
+:ET
