@@ -1,0 +1,138 @@
+I"�!<p>Jun Hur’s Blog Post 2 for PIC 16B!</p>
+
+<h1 id="1-my-favorite-movie-the-butterfly-effect">1. My Favorite Movie: The Butterfly Effect.</h1>
+
+<p>Here is the link to the movie on <strong>IMDB</strong> page : https://www.imdb.com/title/tt0289879/</p>
+
+<p>And here is the page where I can see the <strong>Series Cast</strong>: https://www.imdb.com/title/tt0289879/fullcredits/</p>
+
+<p>And I chose <strong>Ashton Kutcher</strong> here, bringing me to this page: https://www.imdb.com/name/nm0005110/</p>
+
+<p>Now, I want to create a <code class="language-plaintext highlighter-rouge">scraper</code> that does this job: start from this movie, look at all the actors in the movie, and then log all the other movies or TV shows that he or she worked on.</p>
+
+<p>First, I need to type the following to start on Anaconda terminal:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">conda</span> <span class="n">activate</span> <span class="n">PIC16B</span>
+<span class="n">scrapy</span> <span class="n">startproject</span> <span class="n">IMDB_scraper</span>
+<span class="n">cd</span> <span class="n">IMDB_scraper</span>
+</code></pre></div></div>
+
+<p>Then it will create a file called <code class="language-plaintext highlighter-rouge">IMDB_scraper</code> on the current directory. In the <code class="language-plaintext highlighter-rouge">settings.py</code> file, I add the following line to prevent my scraper from downloading too much data for now.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">CLOSESPIDER_PAGECOUNT</span> <span class="o">=</span> <span class="mi">20</span>
+</code></pre></div></div>
+
+<h1 id="2-create-a-scraper">2. Create a Scraper.</h1>
+
+<p>I will create a python file <code class="language-plaintext highlighter-rouge">imdb_spider.py</code> in the <code class="language-plaintext highlighter-rouge">spiders</code> folder and add the lines:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># to run 
+# scrapy crawl imdb_spider -o movies.csv
+</span>
+<span class="kn">import</span> <span class="nn">scrapy</span>
+
+<span class="k">class</span> <span class="nc">ImdbSpider</span><span class="p">(</span><span class="n">scrapy</span><span class="p">.</span><span class="n">Spider</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s">'imdb_spider'</span>
+    
+    <span class="n">start_urls</span> <span class="o">=</span> <span class="p">[</span><span class="s">'https://www.imdb.com/title/tt0106145/'</span><span class="p">]</span>
+</code></pre></div></div>
+
+<p>Here is the important part: <strong><code class="language-plaintext highlighter-rouge">parse(self,response)</code></strong> method.</p>
+
+<p>This method will start on my movie and navigate to the <em>Cast &amp; Crew</em> Page.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">response</span><span class="p">):</span>
+        <span class="s">"""
+        Starts on the start_urls and navigates to 
+        the Cast&amp;Crew page
+
+        Note that the Cast&amp;Crew page has url ending 
+        ~ "fullcredits/"
+        """</span>
+
+        <span class="n">cast_crew</span> <span class="o">=</span> <span class="n">response</span><span class="p">.</span><span class="n">urljoin</span><span class="p">(</span><span class="s">"fullcredits/"</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">scrapy</span><span class="p">.</span><span class="n">Request</span><span class="p">(</span><span class="n">cast_crew</span><span class="p">,</span>
+         <span class="n">callback</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">parse_full_credits</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>When we call <code class="language-plaintext highlighter-rouge">response.urljoin("fullcredits/")</code> in <code class="language-plaintext highlighter-rouge">scrapy shell</code>, we see:</p>
+
+<p><img src="/images/blog_2_0.JPG" alt="_config.yml" /></p>
+
+<p>This the url of the <em>Cast &amp; Crew</em> Page!</p>
+
+<p>Then, the <code class="language-plaintext highlighter-rouge">parse_full_credits(self, response)</code> method is called:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="k">def</span> <span class="nf">parse_full_credits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">response</span><span class="p">):</span>
+        <span class="s">"""
+        Assume we start on the Cast&amp;Crew page,
+
+        Yield a scrapy.
+        Request for the page of each actor 
+        listed on the page.
+
+        Crew members are excluded.
+        """</span>
+
+        <span class="n">actors_urls</span> <span class="o">=</span> <span class="p">[</span><span class="n">a</span><span class="p">.</span><span class="n">attrib</span><span class="p">[</span><span class="s">"href"</span><span class="p">]</span> 
+        <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">response</span><span class="p">.</span><span class="n">css</span><span class="p">(</span><span class="s">"td.primary_photo a"</span><span class="p">)]</span>
+
+        <span class="n">urls</span> <span class="o">=</span> <span class="p">[</span><span class="n">response</span><span class="p">.</span><span class="n">urljoin</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> 
+        <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">actors_urls</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">url</span> <span class="ow">in</span> <span class="n">urls</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">scrapy</span><span class="p">.</span><span class="n">Request</span><span class="p">(</span><span class="n">url</span><span class="p">,</span>
+             <span class="n">callback</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">parse_actor_page</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Let’s see what’s happening here.</p>
+
+<p>First, when we see the <code class="language-plaintext highlighter-rouge">response.css("td.primary_photo a")</code> output in the shell, we see a large set of output:</p>
+
+<p><img src="/images/blog_2_1.JPG" alt="_config.yml" /></p>
+
+<p>Note the <strong>nm …..</strong> in <strong>&lt;a href= … &gt;</strong> here:</p>
+
+<p><img src="/images/blog_2_2.JPG" alt="_config.yml" /></p>
+
+<p>That is what we are looking at!</p>
+
+<p>Each of them is the <strong>url of each of the actors!</strong></p>
+
+<p>For example, the first actor on the page https://www.imdb.com/title/tt0289879/fullcredits/ is <em>Ashton Kutcher</em>, and his url is</p>
+
+<p><img src="/images/blog_2_3.JPG" alt="_config.yml" /></p>
+
+<p>So we are <strong>to yield a <code class="language-plaintext highlighter-rouge">scrapy.Request</code> for the page of each of the actors on the page.</strong></p>
+
+<p>Let’s examine the <em>css structure</em> of the actor’s page!</p>
+
+<p>First, we see that <strong>the actor’s name</strong> appears as follow:</p>
+
+<p><img src="/images/blog_2_4.JPG" alt="_config.yml" /></p>
+
+<p>Second, the <strong>Movies or TV shows</strong> the actor has worked appears as follow:</p>
+
+<p><img src="/images/blog_2_5.JPG" alt="_config.yml" /></p>
+
+<p>Let’s experiment this on the shell:</p>
+
+<p><img src="/images/blog_2_6.JPG" alt="_config.yml" /></p>
+
+<p>We need to extract the name, so we need to call</p>
+
+<p><img src="/images/blog_2_7.JPG" alt="_config.yml" /></p>
+
+<p>Now, extracting the movie or TV show names is more challenging, but let’s see on the shell as well!</p>
+
+<p><img src="/images/blog_2_8.JPG" alt="_config.yml" /></p>
+
+<p>So we can see the list of the movies or Tv shows this way:</p>
+
+<p><img src="/images/blog_2_9.JPG" alt="_config.yml" /></p>
+
+<p>This is the list of <strong>first 10 movies of TV shows</strong> where <em>Ashton Kutcher has worked</em>.</p>
+
+<p>Finally, when the actor’s page is reached, we call <code class="language-plaintext highlighter-rouge">parse_actor_page(self,response)</code></p>
+
+:ET
