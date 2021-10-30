@@ -1,0 +1,44 @@
+I"�<p>Jun Hur’s Blog Post 3 for PIC 16B!</p>
+
+<p>In this blog post, we will create a simple web app using <strong>Flask</strong>.</p>
+
+<p>In the app, we will</p>
+
+<ul>
+  <li>
+    <ol>
+      <li>Allow the user to submit messages to the bank.</li>
+    </ol>
+  </li>
+  <li>
+    <ol>
+      <li>Allow the user to view a sample of the messages currently stored in the bank.</li>
+    </ol>
+  </li>
+</ul>
+
+<h1 id="1-enable-submissions">1. Enable Submissions</h1>
+
+<p>First, we will create a <code class="language-plaintext highlighter-rouge">submit</code> template for the user to</p>
+
+<ul>
+  <li>
+    <ol>
+      <li>submit a message in a text box</li>
+    </ol>
+  </li>
+  <li>
+    <ol>
+      <li>submit a name in a text box</li>
+    </ol>
+  </li>
+</ul>
+
+<p>Here, I added <strong>navigation links</strong> to submit and view messages. Then, I have <code class="language-plaintext highlighter-rouge">submit</code> and <code class="language-plaintext highlighter-rouge">view</code> template <code class="language-plaintext highlighter-rouge">extend</code> <code class="language-plaintext highlighter-rouge">base</code> using ` extends ‘base.html’` command.</p>
+
+<p>Here is the picture of my website.</p>
+
+<p><img src="/images/blog_3_0.JPG" alt="_config.yml" /></p>
+
+<p>I refer to professor Phil Chodrow’s awesome <em>style.css</em> in the repository <a href="https://github.com/PIC16B/flask-interactions"> here </a></p>
+:ET

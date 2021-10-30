@@ -1,0 +1,111 @@
+I"<p>Jun Hur’s Blog Post 3 for PIC 16B!</p>
+
+<p>In this blog post, we will create a simple web app using <strong>Flask</strong>.</p>
+
+<p>In the app, we will</p>
+
+<ul>
+  <li>Allow the user to submit messages to the bank.</li>
+  <li>Allow the user to view a sample of the messages currently stored in the bank.</li>
+</ul>
+
+<h1 id="1-enable-submissions">1. Enable Submissions</h1>
+
+<p>First, we will create a <code class="language-plaintext highlighter-rouge">submit</code> template for the user to</p>
+
+<ul>
+  <li>submit a message in a text box</li>
+  <li>submit a name in a text box</li>
+</ul>
+
+<p>Here, I added <strong>navigation links</strong> to submit and view messages. Then, I have <code class="language-plaintext highlighter-rouge">submit</code> and <code class="language-plaintext highlighter-rouge">view</code> template <code class="language-plaintext highlighter-rouge">extend</code> <code class="language-plaintext highlighter-rouge">base</code> using ` extends ‘base.html’` command.</p>
+
+<p>Here is the picture of my website.</p>
+
+<p><img src="/images/blog_3_0.JPG" alt="_config.yml" /></p>
+
+<p>Here are the <code class="language-plaintext highlighter-rouge">base</code> template and <code class="language-plaintext highlighter-rouge">main()</code> function to render the template:</p>
+
+<p><img src="/images/blog_3_base_code.JPG" alt="_config.yml" /></p>
+
+<p>I refer to professor Phil Chodrow’s awesome <em>style.css</em> in the repository <a href="https://github.com/PIC16B/flask-interactions"> here </a></p>
+
+<p>Here is the <code class="language-plaintext highlighter-rouge">base</code> template.</p>
+
+<p><strong>NOTE:</strong> I took a screenshot of my code instead of writing it.</p>
+
+<p><img src="/images/blog_3_base.JPG" alt="_config.yml" /></p>
+
+<p>This is easy to understand:</p>
+
+<ul>
+  <li>In line 3, we link to our <code class="language-plaintext highlighter-rouge">style.css</code> file</li>
+  <li>Using <code class="language-plaintext highlighter-rouge">nav</code> tag in line 9-15, we create the navigation links.</li>
+</ul>
+
+<p>And, here is my <code class="language-plaintext highlighter-rouge">submit</code> template.</p>
+
+<p><img src="/images/blog_3_submit.JPG" alt="_config.yml" /></p>
+
+<p>Simply,</p>
+
+<ul>
+  <li>We create a post, where users can submit their message and name. If they submit correctly, we show them a thank you message, otherwise we show them an error message.</li>
+</ul>
+
+<h2 id="get_message_db-function">get_message_db() function</h2>
+
+<p>To get the messages and save them, we need to create a function <code class="language-plaintext highlighter-rouge">get_message_db()</code> in <code class="language-plaintext highlighter-rouge">app.py</code> file.</p>
+
+<p><img src="/images/blog_3_submit.JPG" alt="_config.yml" /></p>
+
+<p><img src="/images/blog_3_get_message_db.JPG" alt="_config.yml" /></p>
+
+<p>This function will:</p>
+
+<p>-<strong>Line 36 - 38</strong> Check whether there is a database called <code class="language-plaintext highlighter-rouge">message_db</code> in the <code class="language-plaintext highlighter-rouge">g</code> attribute of the app. If not, then connect to that database, ensuring that the connection is an attribute of g. To do this last step, write a line like do <code class="language-plaintext highlighter-rouge">g.message_db = sqlite3.connect("messages_db.sqlite)</code></p>
+
+<ul>
+  <li>
+    <p>Check whether a table called <code class="language-plaintext highlighter-rouge">messages</code> exists in <code class="language-plaintext highlighter-rouge">message_db</code>, and create it if not. For this purpose, the SQL command <code class="language-plaintext highlighter-rouge">CREATE TABLE IF NOT EXISTS</code> is helpful. Give the table an <code class="language-plaintext highlighter-rouge">id</code> column (integer), a <code class="language-plaintext highlighter-rouge">handle</code> column (text), and a <code class="language-plaintext highlighter-rouge">message</code> column (text).</p>
+  </li>
+  <li>
+    <p>Return the connection <code class="language-plaintext highlighter-rouge">g.message_db</code>.</p>
+  </li>
+</ul>
+
+<p>I referred to this stack overflow <a href="https://stackoverflow.com/questions/491921/unicode-utf-8-reading-and-writing-to-files-in-python"> site </a> for <code class="language-plaintext highlighter-rouge">decode</code> function</p>
+
+<h2 id="insert_messagerequest-function">insert_message(request) function</h2>
+
+<p><img src="/images/blog_3_insert_message.JPG" alt="_config.yml" /></p>
+
+<p>This function will deal with inserting a user message into our database. Specifically:</p>
+
+<ul>
+  <li>
+    <p>Extract the <code class="language-plaintext highlighter-rouge">message</code> and the <code class="language-plaintext highlighter-rouge">handle</code> from <code class="language-plaintext highlighter-rouge">request</code>.</p>
+  </li>
+  <li>
+    <p>Using a cursor, insert the message into the message database in a form like this:</p>
+  </li>
+</ul>
+
+<p><input type="text" name="message" id="message" />
+(example)</p>
+
+<h1 id="2-view-random-submissions">2. View Random Submissions</h1>
+
+<p>We will write a function <code class="language-plaintext highlighter-rouge">random_message(n)</code> that will return a collection of <code class="language-plaintext highlighter-rouge">n</code> random messages from the <code class="language-plaintext highlighter-rouge">message_db</code>, or fewer if necessary.</p>
+
+<p><img src="/images/blog_3_random_message.JPG" alt="_config.yml" /></p>
+
+<p>I referred to this stack overflow <a href="https://stackoverflow.com/questions/2279706/select-random-row-from-a-sqlite-table"> site </a> for <code class="language-plaintext highlighter-rouge">random_messages()</code> function</p>
+
+<p>Finally, we write a function to render our <code class="language-plaintext highlighter-rouge">view.html</code> template.</p>
+
+<p><img src="/images/blog_3_view.JPG" alt="_config.yml" /></p>
+
+<p>This function calls <code class="language-plaintext highlighter-rouge">random_messages()</code> to get some random messages (cap of 5), and pass the messages to <code class="language-plaintext highlighter-rouge">render_template()</code>.</p>
+
+:ET
