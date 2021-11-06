@@ -6,7 +6,7 @@
 name: Jun Hur
 
 # Short bio or description (displayed in the header)
-description: Aspiring Data Scientist
+description: Aspiring Data Scientist and Student
 
 # URL of your avatar or profile pic (you could use your GitHub profile pic)
 avatar:
@@ -59,6 +59,7 @@ permalink: /:title/
 version: v1.2.0
 
 # Jekyll 3 now only supports Kramdown for Markdown
+markdown: kramdown
 kramdown:
   # Use GitHub flavored markdown, including triple backtick fenced code blocks
   input: GFM
