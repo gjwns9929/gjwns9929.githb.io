@@ -1,0 +1,233 @@
+I"�5<p>Jun Hur’s Blog Post 4 for PIC 16B!</p>
+
+<h1 id="spectral-clustering">Spectral Clustering</h1>
+
+<p>Here, we will write a tutorial on a simple version of the spectral clustering algorithm for clustering data points.</p>
+
+<h2 id="notation">Notation</h2>
+<p>In all the math below:</p>
+
+<ul>
+  <li>Boldface capital letters like <strong>A</strong> refer to matrices (2d arrays of numbers).</li>
+  <li>Boldface lowercase letters like <strong>v</strong> refer to vectors (1d arrays of numbers).</li>
+  <li><strong>AB</strong> refers to a matrix-matrix product (A@B). <strong>Av</strong> refers to a matrix-vector product (A@v)</li>
+</ul>
+
+<h2 id="motivation">Motivation</h2>
+
+<p>Consider the following plot:</p>
+
+<p><img src="/images/blog_4_code_0.JPG" alt="_config.yml" />
+<img src="/images/blog_4_moti_0.JPG" alt="_config.yml" /></p>
+
+<p>They are clearly divided by two <em>groups</em>, so such spectral clustering is not needed.</p>
+
+<p><em>Clustering</em> refers to the task of separating this data set into the two natural <strong>“blobs.”</strong> K-means is a very common way to achieve this task, which has good performance on circular-ish blobs like these:</p>
+
+<p><img src="/images/blog_4_code_1.JPG" alt="_config.yml" />
+<img src="/images/blog_4_moti_1.JPG" alt="_config.yml" /></p>
+
+<p>What about somewhat more complex dataset?</p>
+
+<p><img src="/images/blog_4_code_2.JPG" alt="_config.yml" />
+<img src="/images/blog_4_moti_2.JPG" alt="_config.yml" /></p>
+
+<p><img src="/images/blog_4_code_3.JPG" alt="_config.yml" />
+<img src="/images/blog_4_moti_3.JPG" alt="_config.yml" /></p>
+
+<p>So, the clustering is not as good as before, is it?</p>
+
+<p>So, we will use <strong>spectral clustering</strong> to do better.</p>
+
+<h2 id="part-a--similarity-matrix--a">Part A : <em>Similarity Matrix</em>  <strong>A</strong></h2>
+
+<p>Here, <strong>A</strong> will be a matrix (2d) with shape <code class="language-plaintext highlighter-rouge">(n,n)</code>, where each entry <code class="language-plaintext highlighter-rouge">A[i,j]</code> is equal to 1 if <code class="language-plaintext highlighter-rouge">X[i]</code> (the coordinates of data point <code class="language-plaintext highlighter-rouge">i</code>) is within distance <code class="language-plaintext highlighter-rouge">epsilon</code> of <code class="language-plaintext highlighter-rouge">X[j]</code>, and <code class="language-plaintext highlighter-rouge">0</code> otherwise</p>
+
+<p>For this part, we will use <code class="language-plaintext highlighter-rouge">epsilon = 0.4</code></p>
+
+<p>Let’s recall that the matrix <code class="language-plaintext highlighter-rouge">X</code> contains the Euclidean <strong>coordinates of the data points</strong> and vector <code class="language-plaintext highlighter-rouge">y</code> contains the <strong>labels of each point</strong>.</p>
+
+<p><img src="/images/blog_4_A_0.JPG" alt="_config.yml" />
+<img src="/images/blog_4_A_1.JPG" alt="_config.yml" /></p>
+
+<p>To create such matrix <strong>A</strong>, we need to use <code class="language-plaintext highlighter-rouge">sklearn.metrics.pairwise</code> from <code class="language-plaintext highlighter-rouge">pairwise_distances</code>. The doc for this is <a href="https://scikit-learn.org/stable/modules/generated/sklearn.metrics.pairwise_distances.html"> here </a>.</p>
+
+<p>First, we fill in the entries of <strong>A</strong> with <code class="language-plaintext highlighter-rouge">True</code> or <code class="language-plaintext highlighter-rouge">False</code>, depending on whether <code class="language-plaintext highlighter-rouge">X</code> is within distance of epsilon of <code class="language-plaintext highlighter-rouge">X[j]</code>. Then, we convert the entry values to <code class="language-plaintext highlighter-rouge">0</code> or <code class="language-plaintext highlighter-rouge">1</code>.</p>
+
+<p>Finally, we set the entries of <strong>A</strong> to 0, that is, <code class="language-plaintext highlighter-rouge">A[i,i] = 0</code>.</p>
+
+<p><img src="/images/blog_4_A_2.JPG" alt="_config.yml" /></p>
+
+<h2 id="part-b1--the-cut-term">Part B.1 : The Cut Term</h2>
+
+<p>We will call \(d_i = \sum_{j = 1}^n a_{ij}\) the <em>degree of i</em>, so the <code class="language-plaintext highlighter-rouge">ith row-sum of A</code>.</p>
+
+<p>Also, let \(C_0\) and \(C_1\) be two clusters of the data points, and each data point is in either \(C_0\) or \(C_1\).</p>
+
+<p>Now, the binary norm cut object of a matrix <strong>A</strong> is:</p>
+
+\[N_{\mathbf{A}}(C_0, C_1)\equiv \mathbf{cut}(C_0, C_1)\left(\frac{1}{\mathbf{vol}(C_0)} + \frac{1}{\mathbf{vol}(C_1)}\right)\;.\]
+
+<p>Where</p>
+
+<ul>
+  <li>\(\mathbf{cut}(C_0, C_1) \equiv \sum_{i \in C_0, j \in C_1} a_{ij}\)  is the cut of the clusters \(C_0\) and \(C_1\).</li>
+  <li>\(\mathbf{vol}(C_0) \equiv \sum_{i \in C_0}d_i\) where \(d_i = \sum_{j = 1}^n a_{ij}\) is the <em>degree</em> of row i. Thus, the <em>volume</em> of cluster is a measure of the size of the cluster.</li>
+</ul>
+
+<p>First, the cut term \(\mathbf{cut}(C_0, C_1)\) is the number of nonzero entries in <strong>A</strong> that relate points in cluster \(C_0\) to points in cluster \(C_1\).</p>
+
+<p>A function <code class="language-plaintext highlighter-rouge">cut(A,y)</code> will compute the cut term. Here, we will sum up the entries <code class="language-plaintext highlighter-rouge">A[i,j]</code> for each pair of points <code class="language-plaintext highlighter-rouge">(i,j)</code> in different clusters.</p>
+
+<p>Let’s talk about the <code class="language-plaintext highlighter-rouge">y</code> variable, which is <em>label</em>. More specifically, <code class="language-plaintext highlighter-rouge">y[i]</code> is <strong>the label of point i</strong>. For clustering purpose, we set</p>
+
+<p>\(y[i] = 0\), if \(i \in C_0\)</p>
+
+<p>\(y[i] = 1\), if \(i \in C_1\)</p>
+
+<p>Thus, we will first define \(C_0\) and \(C_1\) as <strong>indices</strong> of array <code class="language-plaintext highlighter-rouge">y</code> in a sense that \(C_0\) contains the indices of point whose label is equal to 0 and that \(C_1\) contains the indices of point whose label is equal to 1.</p>
+
+<p><img src="/images/blog_4_B_0.JPG" alt="_config.yml" />
+<img src="/images/blog_4_B_1.JPG" alt="_config.yml" /></p>
+
+<p>Check if two clusters share any point in common:</p>
+
+<p><img src="/images/blog_4_B_2.JPG" alt="_config.yml" /></p>
+
+<p>Great!</p>
+
+<p>Now, the function is defined as follows:</p>
+
+<p><img src="/images/blog_4_B_3.JPG" alt="_config.yml" /></p>
+
+<p>Let’s confirm that the cut objective indeed favors the true clusters over the random ones.</p>
+
+<p><img src="/images/blog_4_B_4.JPG" alt="_config.yml" />
+<img src="/images/blog_4_B_5.JPG" alt="_config.yml" /></p>
+
+<h2 id="part-b2--the-volume-term">Part B.2 : The Volume Term</h2>
+
+<p>Let’s look at the <code class="language-plaintext highlighter-rouge">volume term</code>.</p>
+
+<p>The <strong>volume</strong> of cluster \(C_0\) is a measure of how “big” cluster \(C_0\) is.</p>
+
+<p>We will write a function <code class="language-plaintext highlighter-rouge">vols(A,y)</code> that computes the volumes of \(C_0\) and \(C_1\), returning them as a tuple.</p>
+
+<p><img src="/images/blog_4_B_6.JPG" alt="_config.yml" /></p>
+
+<p>Let’s check the volumes!</p>
+
+<p><img src="/images/blog_4_B_7.JPG" alt="_config.yml" /></p>
+
+<p>Let’s add those two functions to create <code class="language-plaintext highlighter-rouge">normcut(A,y)</code> to compute the <strong>binary normalized cut object</strong> for <strong>A</strong> and <code class="language-plaintext highlighter-rouge">y</code>.</p>
+
+<p><img src="/images/blog_4_B_8.JPG" alt="_config.yml" /></p>
+
+<p>Now, finally we compare <code class="language-plaintext highlighter-rouge">normcut</code> on true label <code class="language-plaintext highlighter-rouge">y</code> and fake labels we created above.</p>
+
+<p><img src="/images/blog_4_B_9.JPG" alt="_config.yml" /></p>
+
+<p>Clearly, the norm cut for true label is <strong>significantly smaller</strong> than that for fake label.</p>
+
+<h2 id="part-c">Part C:</h2>
+
+<p>We need a math trick as a cluster vector <code class="language-plaintext highlighter-rouge">y</code> that makes <code class="language-plaintext highlighter-rouge">normcut(A,y)</code> small is an NP-hard.</p>
+
+<p>That is, we need to come up with a new vector \(\mathbf{z} \in \mathbb{R}^n\) such that 
+\(z_i = 
+\begin{cases}
+    \frac{1}{\mathbf{vol}(C_0)} &amp;\quad \text{if } y_i = 0 \\ 
+    -\frac{1}{\mathbf{vol}(C_1)} &amp;\quad \text{if } y_i = 1 \\ 
+\end{cases}\)</p>
+
+<p>Therefore, if <code class="language-plaintext highlighter-rouge">i</code> is in cluster \(C_0\), then \(z_i &gt; 0\) and vice versa.</p>
+
+<p>Then, we will show</p>
+
+<p>\(\mathbf{N}_{\mathbf{A}}(C_0, C_1) = \frac{\mathbf{z}^T (\mathbf{D} - \mathbf{A})\mathbf{z}}{\mathbf{z}^T\mathbf{D}\mathbf{z}}\;,\)
+where <strong>D</strong> is the diagonal matrix with nonzero entries \(d_{ii} = d_i\)</p>
+
+<p>with a function <code class="language-plaintext highlighter-rouge">transform(A,y)</code> that computes the appropriate <strong>z</strong> vector given <code class="language-plaintext highlighter-rouge">A</code> and <code class="language-plaintext highlighter-rouge">y</code>.</p>
+
+<p>Consider the equation: \(z = \frac{1}{\mathbf{vol}(C_0)} -(\frac{1}{\mathbf{vol}(C_0)} + \frac{1}{\mathbf{vol}(C_1)})y_i\).</p>
+
+<p>This will achieve
+ \(z_i = 
+\begin{cases}
+    \frac{1}{\mathbf{vol}(C_0)} &amp;\quad \text{if } y_i = 0 \\ 
+    -\frac{1}{\mathbf{vol}(C_1)} &amp;\quad \text{if } y_i = 1 \\ 
+\end{cases}\)</p>
+
+<p>Therefore, the <code class="language-plaintext highlighter-rouge">transform(A,y)</code> function is simply:</p>
+
+<p><img src="/images/blog_4_C_0.JPG" alt="_config.yml" /></p>
+
+<p>Next, we will check the equations in <strong>Part B</strong> and <strong>Part C</strong> are equal.</p>
+
+<p><img src="/images/blog_4_C_1.JPG" alt="_config.yml" /></p>
+
+<p>Then, we will prove that \(\mathbf{z}^T\mathbf{D}\mathbb{1} = 0\)</p>
+
+<p><img src="/images/blog_4_C_2.JPG" alt="_config.yml" /></p>
+
+<h2 id="part-d-optimization--continuous-relaxation-of-the-normcut">Part D: Optimization : continuous relaxation of the normcut</h2>
+
+<p>Recall that t the problem of minimizing the normcut objective is mathematically related to the problem of minimizing the function 
+\(R_\mathbf{A}(\mathbf{z})\equiv \frac{\mathbf{z}^T (\mathbf{D} - \mathbf{A})\mathbf{z}}{\mathbf{z}^T\mathbf{D}\mathbf{z}}\)</p>
+
+<p>We start with an <code class="language-plaintext highlighter-rouge">orth_obj</code> function given by professor:</p>
+
+<p><img src="/images/blog_4_D_0.JPG" alt="_config.yml" /></p>
+
+<p>We will use the <code class="language-plaintext highlighter-rouge">minimize</code> function from <code class="language-plaintext highlighter-rouge">scipy.optimize</code> to minimize the function <code class="language-plaintext highlighter-rouge">orth_obj</code> w.r.t <strong>z</strong>. Refer to the full doc <a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html"> here </a>.</p>
+
+<p>For our initial guess, we use 1’s.</p>
+
+<p><img src="/images/blog_4_D_1.JPG" alt="_config.yml" /></p>
+
+<p>Then, according to the doc, <code class="language-plaintext highlighter-rouge">.x</code> will contain the solution array.</p>
+
+<p><img src="/images/blog_4_D_2.JPG" alt="_config.yml" />
+<img src="/images/blog_4_D_3.JPG" alt="_config.yml" /></p>
+
+<h2 id="part-e-plot-the-original-data-on-z_min">Part E: Plot the original data on z_min</h2>
+<p>Here, we will plot the original data:
+<img src="/images/blog_4_code_2.JPG" alt="_config.yml" />
+<img src="/images/blog_4_moti_2.JPG" alt="_config.yml" /></p>
+
+<p>while using <code class="language-plaintext highlighter-rouge">z_min[i]</code> being <strong>negative</strong> or <strong>non-negative</strong>.</p>
+
+<p><img src="/images/blog_4_E_0.JPG" alt="_config.yml" /></p>
+
+<p>Now the clustering looks <strong>correct</strong> indeed!</p>
+
+<h2 id="part-f-use-eigenvalues-and-eigenvectors">Part F: Use Eigenvalues and Eigenvectors</h2>
+
+<p>We can use <strong>eigenvalues</strong> and <strong>eigenvectors</strong> to solve the problem more efficiently. First, recall our problem to minimize:</p>
+
+\[R_\mathbf{A}(\mathbf{z})\equiv \frac{\mathbf{z}^T (\mathbf{D} - \mathbf{A})\mathbf{z}}{\mathbf{z}^T\mathbf{D}\mathbf{z}}\]
+
+<p>w.r.t <strong>z</strong> subject to \(\mathbf{z}^T\mathbf{D}\mathbb{1} = 0\)</p>
+
+<p>The <em>Rayleigh-Ritz</em> Theorem states that the minimizing z must be the solution with smallest eigenvalue of the generalized eigenvalue problem</p>
+
+\[(\mathbf{D} - \mathbf{A}) \mathbf{z} = \lambda \mathbf{D}\mathbf{z}\;, \quad \mathbf{z}^T\mathbf{D}\mathbb{1} = 0\]
+
+<p>Thus</p>
+
+\[\mathbf{D}^{-1}(\mathbf{D} - \mathbf{A}) \mathbf{z} = \lambda \mathbf{z}\;, \quad \mathbf{z}^T\mathbb{1} = 0\;.\]
+
+<p><strong>So, the vector z that we want must be the eigenvector with the second-smallest eigenvalue.</strong></p>
+
+<p>First, we will construct a matrix \(\mathbf{L} = \mathbf{D}^{-1}(\mathbf{D} - \mathbf{A})\), called <em>Laplacian</em> matrix of <strong>A</strong></p>
+
+<p><img src="/images/blog_4_F_0.JPG" alt="_config.yml" /></p>
+
+<p>Find the eigenvector corresponding to its second-smallest eigenvalue, and call it <code class="language-plaintext highlighter-rouge">z_eig</code></p>
+
+<p><strong>Note</strong>: I referred to <a href="https://numpy.org/doc/stable/reference/generated/numpy.linalg.eig.html"> here for this task.</a></p>
+
+<p>Thus, <code class="language-plaintext highlighter-rouge">W</code> contains <strong>eigenvalues</strong> and <code class="language-plaintext highlighter-rouge">V</code> contains <strong>eigenvectors</strong></p>
+
+<p><img src="/images/blog_4_F_1.JPG" alt="_config.yml" /></p>
+:ET
