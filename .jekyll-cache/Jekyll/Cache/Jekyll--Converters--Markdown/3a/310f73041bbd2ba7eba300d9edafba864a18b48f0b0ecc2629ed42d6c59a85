@@ -1,0 +1,184 @@
+I"/<p>Jun Hur’s Blog Post 5 for PIC 16B!</p>
+
+<h1 id="image-classification-in-tensorflow">Image Classification In Tensorflow</h1>
+
+<p>Today we are interested in teaching a machine learning algorithm to distinguish between pictures of dogs and cats.</p>
+
+<p>The complete instruction can be found <a href="https://www.philchodrow.com/PIC16B//posts/blog-post-5"> here </a>.</p>
+
+<h1 id="1load-packages-and-obtain-data">1.Load Packages and Obtain Data</h1>
+
+<p><img src="/images/blog_5_1_0.JPG" alt="_config.yml" /></p>
+
+<p>By running the following code, we create TensorFlow <code class="language-plaintext highlighter-rouge">Dataset</code>s for training, validation, and testing.</p>
+
+<p>Again, from <strong>Blog Post 1</strong> we did the other day, we can use data sets in cases where it’s not practical to load all the data into memory.</p>
+
+<p>Using <code class="language-plaintext highlighter-rouge">image_dataset_from_directory</code> in <code class="language-plaintext highlighter-rouge">keras</code> <code class="language-plaintext highlighter-rouge">utils</code>, we specify that</p>
+
+<ul>
+  <li>the images will be located in <code class="language-plaintext highlighter-rouge">train_dir</code> or <code class="language-plaintext highlighter-rouge">validation_dir</code></li>
+  <li>the data will be random by <code class="language-plaintext highlighter-rouge">shuffle=True</code></li>
+  <li>32 images will be loaded in each of the data sets by <code class="language-plaintext highlighter-rouge">batch_size = BATCH_SIZE</code></li>
+  <li>the size of image will be 160 x 160 by <code class="language-plaintext highlighter-rouge">image_size = IMG_SIZE</code></li>
+</ul>
+
+<p>Additionally, the following code is for rapid reading:</p>
+
+<p><img src="/images/blog_5_1_1.JPG" alt="_config.yml" /></p>
+
+<h2 id="working-with-datasets">Working with Datasets</h2>
+
+<p>Finally, we can get a piece of a data set using the <code class="language-plaintext highlighter-rouge">take</code> method.</p>
+
+<p>Here, we will <strong>write a function to create a two-row visualization</strong>.
+More specifically, the first row shows three random pictures of <strong>cats</strong> and the second row shows three random pictures of <strong>dogs</strong></p>
+
+<p>This will be a hint:</p>
+<ul>
+  <li>The following code creates an <em>iterator</em> called <code class="language-plaintext highlighter-rouge">labels</code>.
+<img src="/images/blog_5_1_2.JPG" alt="_config.yml" /></li>
+  <li>And, by referring to this <a href="https://www.tensorflow.org/tutorials/images/transfer_learning"> site, </a> the following code will show <strong>3x3 images and labels from the training set</strong>. 
+<img src="/images/blog_5_1_3.JPG" alt="_config.yml" />
+<img src="/images/blog_5_1_4.JPG" alt="_config.yml" /></li>
+</ul>
+
+<p>To <strong>compute the number of images</strong> in the training data with label <code class="language-plaintext highlighter-rouge">0</code> or <code class="language-plaintext highlighter-rouge">cats</code> and <code class="language-plaintext highlighter-rouge">1</code> or <code class="language-plaintext highlighter-rouge">dogs</code>, we come back to our iterator defined above:</p>
+
+<p><img src="/images/blog_5_1_5.JPG" alt="_config.yml" /></p>
+
+<p>We have 1000 cats and dogs. Therefore, the <em>baseline</em> is <strong>0.5, or 50%</strong></p>
+
+<h1 id="2first-model">2.First Model</h1>
+
+<p>For our first model, we will use <code class="language-plaintext highlighter-rouge">tf.keras.Sequential</code> model using <code class="language-plaintext highlighter-rouge">layers</code> discussed in class, especially <a href="https://colab.research.google.com/github/PhilChodrow/PIC16B/blob/master/lectures/tf/tf-2.ipynb#scrollTo=infinite-installation"> here </a>.</p>
+
+<p>More specifically, in each model, we will include:</p>
+
+<ul>
+  <li>at least <strong>two</strong> <code class="language-plaintext highlighter-rouge">Conv2D</code> layers</li>
+  <li>at least <strong>two</strong> <code class="language-plaintext highlighter-rouge">MaxPooling2D</code> layers</li>
+  <li>at least <strong>one</strong> <code class="language-plaintext highlighter-rouge">Flatten</code> layer</li>
+  <li>at least <strong>one</strong> <code class="language-plaintext highlighter-rouge">Dense</code> layer</li>
+</ul>
+
+<p>Lastly, to train our model, we will</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">history</span> <span class="o">=</span> <span class="n">model1</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">,</span> 
+                     <span class="n">epochs</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> 
+                     <span class="n">validation_data</span><span class="o">=</span><span class="n">validation_dataset</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>For our first model, I aim to do a <strong>bit better</strong> than the baseline, so <strong>at least 52% validation accuracy</strong>.</p>
+
+<p><img src="/images/blog_5_2_0.JPG" alt="_config.yml" />
+<img src="/images/blog_5_2_1.JPG" alt="_config.yml" /></p>
+
+<h2 id="assessment">Assessment</h2>
+<ul>
+  <li>First, the accuracy of the first model stabilized <strong>between 52% and 61%</strong> during training. We achieved our goal of at least 52%!</li>
+  <li>Considering that the baseline was 50%, this is definitely better.</li>
+  <li>However, we see <strong>clear Overfitting</strong>. That is, we have <strong>100%</strong> training accuracy while the validation accuracy is about 60%. We need to come up with a better model.</li>
+</ul>
+
+<p>Before we move on, I would like to look at the learning curves of the training and validation accuracy/loss. Refer <a href="https://www.tensorflow.org/tutorials/images/transfer_learning"> here </a> for more information.</p>
+
+<p><img src="/images/blog_5_2_2.JPG" alt="_config.yml" />
+<img src="/images/blog_5_2_3.JPG" alt="_config.yml" /></p>
+
+<p>As we expected, severe overfitting.</p>
+
+<h1 id="3-model-with-data-augmentation">3. Model with Data Augmentation</h1>
+<p>We are going to add some <em>data augmentation</em> to our model.</p>
+
+<ul>
+  <li>
+    <p>First, we will create a <code class="language-plaintext highlighter-rouge">tf.keras.layers.RandomFlip()</code> layer. This will show a flipped with <code class="language-plaintext highlighter-rouge">RandomFlip</code>. The documentation is also <a href="https://www.tensorflow.org/tutorials/images/transfer_learning"> here </a>.</p>
+  </li>
+  <li>
+    <p>Next, we will create a <code class="language-plaintext highlighter-rouge">tf.keras.layers.RandomRotation()</code> layer. This will show a rotated with <code class="language-plaintext highlighter-rouge">RandomRotation()</code>. The documentation is also <a href="https://www.tensorflow.org/tutorials/images/transfer_learning"> here </a>.</p>
+  </li>
+</ul>
+
+<h2 id="flip">Flip</h2>
+<p><img src="/images/blog_5_3_0.JPG" alt="_config.yml" /></p>
+
+<h2 id="rotation">Rotation</h2>
+<p><img src="/images/blog_5_3_1.JPG" alt="_config.yml" /></p>
+
+<h2 id="enhance-the-model">Enhance the model</h2>
+
+<p><img src="/images/blog_5_3_2.JPG" alt="_config.yml" />
+<img src="/images/blog_5_3_3.JPG" alt="_config.yml" /></p>
+
+<p>Here, we added <code class="language-plaintext highlighter-rouge">RandomFlip()</code> and <code class="language-plaintext highlighter-rouge">RandomRotation()</code> layers, and kept almost other layers the same.</p>
+
+<p><strong>NOTE</strong>: I applied 0.05 for dropOut value for optimization purpose.</p>
+
+<p>As a result, we see a similar set of values for validation accuracy, converging to around <strong>60%</strong>. 
+<strong>Great</strong>!</p>
+
+<p>Also, we have the training accuracy value drop to around 65% also, which is a great point as well, we have much less overfitting this time.</p>
+
+<p>Don’t forget the history plot!
+<img src="/images/blog_5_3_4.JPG" alt="_config.yml" /></p>
+
+<p>This plot shows a great improvement from <code class="language-plaintext highlighter-rouge">model1</code></p>
+
+<h1 id="4-data-preprocessing">4. Data Preprocessing</h1>
+<p>Next, we will make some transformations to the input data. The following code will create a preprocessing layer called <code class="language-plaintext highlighter-rouge">preprocessor</code>, which we will use for our new model.</p>
+
+<p><img src="/images/blog_5_4_0.JPG" alt="_config.yml" />
+<img src="/images/blog_5_4_1.JPG" alt="_config.yml" />
+<img src="/images/blog_5_4_2.JPG" alt="_config.yml" /></p>
+
+<p>This <code class="language-plaintext highlighter-rouge">model3</code> has validation accuracy values converging to <strong>at least 70%</strong>!. This is a significant jump from model1.</p>
+
+<p><img src="/images/blog_5_4_3.JPG" alt="_config.yml" /></p>
+
+<p>In terms of overfitting, it is getting <strong>better</strong>, as the training accuracy is getting closer to validation accuracy.</p>
+
+<h1 id="5-transfer-learning">5. Transfer Learning</h1>
+
+<p>The idea of this part is that there might be (probably very likely) a pre-existing model for image classification. How could we use a pre-existing model for this project?</p>
+
+<p>First, we will access a pre-existing model, incorporate it into a full model, train the model, and evaluate it.</p>
+
+<p>The following code will download <code class="language-plaintext highlighter-rouge">MobileNetV2</code> and we will obtain a layer that we will use for our new model.</p>
+
+<p><img src="/images/blog_5_5_0.JPG" alt="_config.yml" /></p>
+
+<p>In summary, we will use layers that</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">preprocessor</code> layer from <strong>Data Preprocessing</strong> part</li>
+  <li><code class="language-plaintext highlighter-rouge">flip</code> and <code class="language-plaintext highlighter-rouge">rotation</code> layers from <strong>Data Augmentation</strong> part</li>
+  <li><code class="language-plaintext highlighter-rouge">base_model_layer</code> we just created</li>
+  <li><code class="language-plaintext highlighter-rouge">Dense(2)</code> layer</li>
+</ul>
+
+<p><img src="/images/blog_5_5_1.JPG" alt="_config.yml" />
+<img src="/images/blog_5_5_2.JPG" alt="_config.yml" /></p>
+
+<p>As we can see in the code, most of <code class="language-plaintext highlighter-rouge">layers</code> between <code class="language-plaintext highlighter-rouge">base_model_layer</code> and <code class="language-plaintext highlighter-rouge">Dense(2)</code> are not necessary. Rather, I added <code class="language-plaintext highlighter-rouge">GlobalMaxPooling2D</code> and kept <code class="language-plaintext highlighter-rouge">Dropout</code> layer.</p>
+
+<p>We can see why here, using <code class="language-plaintext highlighter-rouge">model4.summary()</code>.
+<img src="/images/blog_5_5_3.JPG" alt="_config.yml" /></p>
+
+<p>There is a lot of complexity hidden in this model, with more than 2 million non-trainable parameters. This is a lot to train.</p>
+
+<p>As a result, we see an incredible set of validation accuracy, at least <strong>95%</strong>.</p>
+
+<p>This is also a huge jump from <code class="language-plaintext highlighter-rouge">model3</code>, which had validation accuracy values converging to only 70%.</p>
+
+<p>In terms of overfitting, we should <strong>NOT</strong> be too much worried about it as the training and validation accuracy values are not greatly different.</p>
+
+<h1 id="6-score-on-test-data">6. Score on Test Data</h1>
+
+<p>Lastly, we will simply evaluate our model. As we saw, <code class="language-plaintext highlighter-rouge">model4</code> perform the best. Therefore, we will simply use <code class="language-plaintext highlighter-rouge">model4.evaluate(test_dataset)</code> to find the <strong>loss</strong> and <strong>accuracy</strong> value.</p>
+
+<p><img src="/images/blog_5_6_0.JPG" alt="_config.yml" /></p>
+
+<p>We see a very low loss value of <strong>0.04</strong> and very high accuracy of <strong>0.99</strong>.</p>
+
+<p>Awesome!</p>
+:ET
