@@ -1,0 +1,35 @@
+I"3<p><strong>Note:</strong> This blog post is written as a group for group <em>M&amp;J&amp;J</em>, <em>Mimoza</em>, <em>Jenel</em>, and Jun.</p>
+
+<h1 id="summary-of-our-work">Summary of our work</h1>
+<p>Throughout the quarter, we utilized course materials to work on our group project, studying individual’s mental health through questionnaires submitted by the individual. You can find the project <a href="https://github.com/jenelle99/PIC16BProject"> here </a>.</p>
+
+<p>By working on the project for the last 10 weeks, we achieved <em>data acquisition, processing, visualization, constructing webapp, and machine learning</em>, using a <em>big data</em> consisting of over 6 million data entries.</p>
+
+<h1 id="what-are-we-proud-of">What are we proud of?</h1>
+<p>Looking back our work, we are proud that we were able to acquire real-world data from open source, analyze it, and apply what we have learned in class to help the society. Additionally, we not only used the class materials, but we also consistently looked for how we could improve our work from outside class, such as <em>stack overflow</em> and other blog posts written by data scientists.</p>
+
+<h1 id="room-for-improvement-for-the-future">Room for improvement for the future</h1>
+<p>In our final work, we achieved effective webapp using <strong>pywebio</strong>. In our proposal, however, we suggested that we would connect the webapp input from the user to the backend works to synchronize the whole process and machine learning, but we instead showed the frontend work separately, and we need more understanding about how we could connect the frontend and backend works.</p>
+
+<h1 id="what-did-we-learn">What did we learn?</h1>
+<p>Overall, we learned:</p>
+<ol>
+  <li>
+    <p>How to acquire real-world data from the internet and get it ready to be analyzed.</p>
+  </li>
+  <li>
+    <p>How to handle front-end works, using HTML and CSS or other built-in packages such as <em>pywebio</em>.</p>
+  </li>
+  <li>
+    <p>How to work as a team, using Git and Github, which were not familiar to us before.</p>
+  </li>
+</ol>
+
+<h1 id="how-would-this-project-help-us-in-the-future">How would this project help us in the future?</h1>
+<p>By completing this course project, we believe it has expanded our abilities to work, manipulate, and analyze real-world data, and we will be able to work as a group and a team using Git and Github.</p>
+
+<p>Especially, our work will not be limited to classes, but we will be able to contribute to the society by solving different types of problem. Also, since we have learned how python enables us to use web development, we will be able to understand frontend works.</p>
+
+<h1 id="last-word">Last word</h1>
+<p>We are tremendously grateful for the opportunities that this class has offered us, the interesting class materials, challenging homework, and awesome group project.</p>
+:ET
